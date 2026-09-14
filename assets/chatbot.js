@@ -478,10 +478,102 @@
 
     // Close on Escape
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && windowEl.classList.contains('is-open')) {
-        closeChat();
+      if (e.key === 'Escape') {
+        if (windowEl.classList.contains('is-open')) {
+          closeChat();
+        }
+        document.querySelectorAll('.modal-backdrop').forEach(modal => {
+          modal.style.display = 'none';
+          modal.style.opacity = '0';
+          modal.style.visibility = 'hidden';
+        });
       }
     });
+
+    // Handle Page Modal triggers (Book Fitting buttons across the page)
+    document.querySelectorAll('[data-trigger-booking], .btn-nav-reserve, .btn-hero-booking').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.MensClubChatbot.openBooking();
+      });
+    });
+
+    // Handle Booking Modal close
+    const bookingClose = document.getElementById('booking-close');
+    const bookingModal = document.getElementById('booking-modal');
+    if (bookingClose && bookingModal) {
+      bookingClose.addEventListener('click', () => {
+        bookingModal.style.display = 'none';
+        bookingModal.style.opacity = '0';
+        bookingModal.style.visibility = 'hidden';
+      });
+      bookingModal.addEventListener('click', (e) => {
+        if (e.target === bookingModal) {
+          bookingModal.style.display = 'none';
+          bookingModal.style.opacity = '0';
+          bookingModal.style.visibility = 'hidden';
+        }
+      });
+    }
+
+    // Handle Appointment Form submit with live feedback
+    const apptForm = document.getElementById('appointment-form');
+    if (apptForm) {
+      apptForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = document.getElementById('booking-name')?.value || 'Valued Patron';
+        const date = document.getElementById('booking-date')?.value || 'Selected Date';
+        const time = document.getElementById('booking-time')?.value || 'Fitting Slot';
+        const location = document.getElementById('booking-location')?.value || 'Showroom';
+        
+        if (bookingModal) {
+          bookingModal.style.display = 'none';
+          bookingModal.style.opacity = '0';
+          bookingModal.style.visibility = 'hidden';
+        }
+
+        // Show toast or open chatbot confirmation
+        openChat();
+        const confirmMsg = {
+          sender: 'bot',
+          text: `🎉 **Fitting Suite Confirmed!**\n\nThank you **${name}**. Your VIP appointment at **${location}** on **${date} (${time})** has been reserved.\n\nOur Senior Stylist will be ready for you. See you soon! ✨`,
+          time: getCurrentTime()
+        };
+        chatHistory.push(confirmMsg);
+        appendMessageToDOM(confirmMsg, true);
+        saveHistory();
+      });
+    }
+
+    // Handle Mobile Menu Toggle
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileDrawer = document.querySelector('.mobile-nav-drawer');
+    const mobileClose = document.querySelector('.mobile-nav-close');
+    if (mobileToggle && mobileDrawer) {
+      mobileToggle.addEventListener('click', () => {
+        mobileDrawer.classList.toggle('is-open');
+        mobileDrawer.style.transform = mobileDrawer.classList.contains('is-open') ? 'translateX(0)' : 'translateX(100%)';
+      });
+      if (mobileClose) {
+        mobileClose.addEventListener('click', () => {
+          mobileDrawer.classList.remove('is-open');
+          mobileDrawer.style.transform = 'translateX(100%)';
+        });
+      }
+    }
+
+    // Gracefully fade out preloader if still active
+    setTimeout(() => {
+      const preloader = document.querySelector('.preloader');
+      if (preloader) {
+        preloader.style.transition = 'opacity 0.6s ease';
+        preloader.style.opacity = '0';
+        preloader.style.pointerEvents = 'none';
+        setTimeout(() => {
+          preloader.style.display = 'none';
+        }, 600);
+      }
+    }, 700);
   }
 
   function toggleChat() {
