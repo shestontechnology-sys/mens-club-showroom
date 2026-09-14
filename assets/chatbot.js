@@ -606,6 +606,16 @@
       openChat();
       handleSendMessage(q);
     },
+    closeBooking: () => {
+      const bookingModal = document.getElementById('booking-modal');
+      if (bookingModal) {
+        bookingModal.classList.remove('is-open', 'is-active');
+        bookingModal.style.display = 'none';
+        bookingModal.style.opacity = '0';
+        bookingModal.style.visibility = 'hidden';
+        bookingModal.style.pointerEvents = 'none';
+      }
+    },
     openBooking: (pieceName = '') => {
       closeChat();
       const bookingModal = document.getElementById('booking-modal');
@@ -614,6 +624,7 @@
         bookingModal.style.display = 'flex';
         bookingModal.style.opacity = '1';
         bookingModal.style.visibility = 'visible';
+        bookingModal.style.pointerEvents = 'auto';
         
         if (pieceName) {
           const pieceInput = document.getElementById('booking-piece');

@@ -104,18 +104,26 @@
 
     /* Modal Usability & Smooth Scrolling */
     .modal-backdrop {
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      position: fixed !important;
-      inset: 0 !important;
-      padding: 1.5rem 1rem !important;
-      overflow-y: auto !important;
-      -webkit-overflow-scrolling: touch !important;
-      z-index: 99999 !important;
+      display: none;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      inset: 0;
+      padding: 1.5rem 1rem;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      z-index: 99999;
+      background: rgba(8, 8, 10, 0.88);
+      -webkit-backdrop-filter: blur(14px);
+      backdrop-filter: blur(14px);
+      transition: opacity 0.25s ease, visibility 0.25s ease;
     }
     .modal-backdrop.is-active,
     .modal-backdrop.is-open {
+      display: flex !important;
       opacity: 1 !important;
       visibility: visible !important;
       pointer-events: auto !important;
@@ -2020,7 +2028,7 @@
   <!-- Appointment Booking Modal -->
   <div class="modal-backdrop" id="booking-modal" role="dialog" aria-modal="true" aria-labelledby="booking-modal-title">
     <div class="modal-dialog" style="max-width: 680px;">
-      <button class="modal-close-btn" id="booking-close" aria-label="Close modal">✕</button>
+      <button class="modal-close-btn" id="booking-close" aria-label="Close modal" onclick="if(window.MensClubChatbot && window.MensClubChatbot.closeBooking){window.MensClubChatbot.closeBooking();}else{var m=document.getElementById('booking-modal');if(m){m.classList.remove('is-open','is-active');m.style.display='none';m.style.visibility='hidden';}}">✕</button>
       <div class="booking-modal-body">
         <span class="eyebrow" style="margin-bottom: 0.5rem;">Private Salon Reservation</span>
         <h2 class="section-title" id="booking-modal-title" style="margin-bottom: 0.35rem;">Book Showroom <em>Viewing</em></h2>
@@ -2603,23 +2611,46 @@
       });
     });
 
-    // Handle Booking Modal close
-    const bookingClose = document.getElementById('booking-close');
-    const bookingModal = document.getElementById('booking-modal');
-    if (bookingClose && bookingModal) {
-      bookingClose.addEventListener('click', () => {
+    function closeBookingModal() {
+      const bookingModal = document.getElementById('booking-modal');
+      if (bookingModal) {
+        bookingModal.classList.remove('is-open', 'is-active');
         bookingModal.style.display = 'none';
         bookingModal.style.opacity = '0';
         bookingModal.style.visibility = 'hidden';
+        bookingModal.style.pointerEvents = 'none';
+      }
+    }
+
+    // Handle Booking Modal close
+    const bookingClose = document.getElementById('booking-close');
+    const bookingModal = document.getElementById('booking-modal');
+    if (bookingClose) {
+      bookingClose.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeBookingModal();
       });
+    }
+    if (bookingModal) {
       bookingModal.addEventListener('click', (e) => {
         if (e.target === bookingModal) {
-          bookingModal.style.display = 'none';
-          bookingModal.style.opacity = '0';
-          bookingModal.style.visibility = 'hidden';
+          closeBookingModal();
         }
       });
     }
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeBookingModal();
+        const lightboxModal = document.getElementById('lightbox-modal');
+        if (lightboxModal) {
+          lightboxModal.classList.remove('is-open', 'is-active');
+          lightboxModal.style.display = 'none';
+        }
+      }
+    });
 
     // Handle Appointment Form submit with live feedback
     const apptForm = document.getElementById('appointment-form');
@@ -2711,6 +2742,16 @@
       openChat();
       handleSendMessage(q);
     },
+    closeBooking: () => {
+      const bookingModal = document.getElementById('booking-modal');
+      if (bookingModal) {
+        bookingModal.classList.remove('is-open', 'is-active');
+        bookingModal.style.display = 'none';
+        bookingModal.style.opacity = '0';
+        bookingModal.style.visibility = 'hidden';
+        bookingModal.style.pointerEvents = 'none';
+      }
+    },
     openBooking: (pieceName = '') => {
       closeChat();
       const bookingModal = document.getElementById('booking-modal');
@@ -2719,6 +2760,7 @@
         bookingModal.style.display = 'flex';
         bookingModal.style.opacity = '1';
         bookingModal.style.visibility = 'visible';
+        bookingModal.style.pointerEvents = 'auto';
         
         if (pieceName) {
           const pieceInput = document.getElementById('booking-piece');
